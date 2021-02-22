@@ -1,0 +1,22 @@
+{
+    "imageDir": "/var/lib/motion",
+    "emailAccount": "...@gmail.com",
+    "emailPassword": "...",
+    "localService": {
+        "address": "http://localhost:5000/api/image"
+    },
+    "logFile": "/home/pi/mio/logs/main.log",
+    "servos": [
+        { 
+            "id": 27,
+            "openState": 500,
+            "closedState": 1100
+        }, {
+            "id": 17,
+            "openState": 2000,
+            "closedState": 1200
+        }
+    ],
+    "deleteFiles": true,
+    "deleteCatFiles": false
+}
