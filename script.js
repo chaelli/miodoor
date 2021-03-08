@@ -19,28 +19,33 @@ let subprocess = null;
 // start python server
 function startPythonScript(firstTime = false) {
     if (!firstTime) {
-        stopProcessing = true;
-        logger.info('killing python process');
-        fkill('python3', {force: true, ignoreCase: true}).then(() => {
-            logger.info('killed python process');
+        if (stopProcessing) {
+            logger.info('currently restarting python process');
+        }
+        else {
+            stopProcessing = true;
+            logger.info('killing python process');
+            fkill('python3', {force: true, ignoreCase: true}).then(() => {
+                logger.info('killed python process');
 
-            // give it a few seconds before restart
-            setTimeout(() => {
+                // give it a few seconds before restart
+                setTimeout(() => {
+                    logger.info('starting python script');
+                    subprocess = spawn('python3', ['/home/pi/mio.py']);
+                    // give it a few seconds to start
+                    setTimeout(() => {
+                        stopProcessing = false;
+                    }, 10000);
+                }, 10000);
+            }).catch((e) => {
+                // probably already killed
+                // restart
+                logger.info('fkill error was ' + e);
                 logger.info('starting python script');
                 subprocess = spawn('python3', ['/home/pi/mio.py']);
-                // give it a few seconds to start
-                setTimeout(() => {
-                    stopProcessing = false;
-                }, 10000);
-            }, 10000);
-        }).catch((e) => {
-            // probably already killed
-            // restart
-            logger.info('fkill error was ' + e);
-            logger.info('starting python script');
-            subprocess = spawn('python3', ['/home/pi/mio.py']);
-            stopProcessing = false;
-        });
+                stopProcessing = false;
+            });
+        }
     }
     else {
         logger.info('starting python script');
