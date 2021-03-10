@@ -1,6 +1,9 @@
 {
     "imageDir": "/var/lib/motion",
-    "emailAccount": "...@gmail.com",
+    "archiveDir": "/home/pi/mio/archive",
+    "deleteFiles": true,
+    "deleteCatFiles": false,
+    "emailAccount": "...@...",
     "emailPassword": "...",
     "localService": {
         "address": "http://localhost:5000/api/image"
@@ -16,7 +19,5 @@
             "openState": 2000,
             "closedState": 1200
         }
-    ],
-    "deleteFiles": true,
-    "deleteCatFiles": false
+    ]
 }
