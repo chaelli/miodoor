@@ -114,6 +114,7 @@ function sendMail(imagePath, closeDateStr, timeTaken, mouseValue, callback) {
 }
 
 function localCallback(name, imagePath, timeTaken, catValue, mouseValue) {
+    logger.info(`${name}: cat = ${catValue}, mouse = ${mouseValue}, time taken = ${timeTaken}`);
     if (/*catValue > 0.7 && */mouseValue > 0.5) {
         let closeDateStr = new Date().toString();
         logger.info(`${name}: close the door at ${closeDateStr} after  ${timeTaken}ms`);
@@ -125,12 +126,14 @@ function localCallback(name, imagePath, timeTaken, catValue, mouseValue) {
                 deleteFile(imagePath);  
             });
         }, 5000);
-    } else if (config.deleteCatFiles && catValue > 0.5) {
-        logger.info(`${name}: cat = ${catValue}, mouse = ${mouseValue}`);
-        deleteFile(imagePath);
+    } else if (catValue > 0.5) {
+        if (config.deleteCatFiles) {
+            deleteFile(imagePath);
+        } else {
+            archiveFile(imagePath);
+        }
     } else {
-        logger.info(`${name}: cat = ${catValue}, mouse = ${mouseValue}`);
-        deleteFile(name);
+        deleteFile(imagePath);
     }
 }
 
@@ -161,7 +164,6 @@ function handleNewFile(name) {
         }
         else {
             let timeTaken = new Date().valueOf() - timeTracker;
-            logger.info(`${name}: got data from local after ${timeTaken}`, body);
             if (body.indexOf('{') === 0) {
                 let response = JSON.parse(body);
                 localCallback(name, path, timeTaken, Math.max(response.tags.nomouse, response.tags.mouse), response.tags.mouse);
@@ -179,6 +181,10 @@ function deleteFile(path) {
     if (config.deleteFiles) {
         fs.unlink(path, () => { logger.info(`${path}: deleted file`); });
     }
+}
+
+function archiveFile(path, fileName) {
+    fs.rename(path, `${config.archiveDir}/${fileName}`);
 }
 
 
