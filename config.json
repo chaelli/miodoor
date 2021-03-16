@@ -5,6 +5,7 @@
     "deleteCatFiles": false,
     "emailAccount": "...@...",
     "emailPassword": "...",
+    "notificationEmail": "...@...",
     "localService": {
         "address": "http://localhost:5000/api/image"
     },
