@@ -92,8 +92,8 @@ function openDoor() {
 function sendMail(imagePath, closeDateStr, timeTaken, mouseValue, callback) {
     try {
         mailTransporter.sendMail({
-            from: 'mtpockettv@gmail.com',
-            to: 'chaelli+mio@gmail.com',
+            from: config.emailAccount,
+            to: config.notificationEmail,
             subject: 'Mio door closed at ' + closeDateStr + ' rated ' + mouseValue,
             text: 'Mio door closed at ' + closeDateStr + ' because of image ' + imagePath + ' after ' + timeTaken + '. Mouse rating was ' + mouseValue,
             attachments: [
@@ -104,12 +104,12 @@ function sendMail(imagePath, closeDateStr, timeTaken, mouseValue, callback) {
             if (err) {
                 logger.error(`Mail could not be sent: ${JSON.stringify(err)}`);
             }
-            callback();
+            callback(true);
         });
     }
     catch (e) {
         logger.error(`Error while sending mail: ${e}`);
-        deleteFile(imagePath);
+        callback(false);
     }
 }
 
@@ -123,15 +123,11 @@ function localCallback(name, imagePath, timeTaken, catValue, mouseValue) {
         // send async - save performance for servo
         setTimeout(function() {
             sendMail(imagePath, closeDateStr, timeTaken, mouseValue, () => {
-                deleteFile(imagePath);  
+                config.deleteCatFiles ? archiveFile(imagePath) : deleteFile(imagePath);
             });
         }, 5000);
     } else if (catValue > 0.5) {
-        if (config.deleteCatFiles) {
-            deleteFile(imagePath);
-        } else {
-            archiveFile(imagePath);
-        }
+        config.deleteCatFiles ? archiveFile(imagePath) : deleteFile(imagePath);
     } else {
         deleteFile(imagePath);
     }
@@ -184,6 +180,7 @@ function deleteFile(path) {
 }
 
 function archiveFile(path, fileName) {
+    logger.info(`${path}: archived file`)
     fs.rename(path, `${config.archiveDir}/${fileName}`);
 }
 
