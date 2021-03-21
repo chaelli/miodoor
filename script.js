@@ -123,11 +123,11 @@ function localCallback(name, imagePath, timeTaken, catValue, mouseValue) {
         // send async - save performance for servo
         setTimeout(function() {
             sendMail(imagePath, closeDateStr, timeTaken, mouseValue, () => {
-                config.deleteCatFiles ? archiveFile(imagePath) : deleteFile(imagePath);
+                config.deleteCatFiles ? deleteFile(imagePath) : archiveFile(imagePath, name);
             });
         }, 5000);
     } else if (catValue > 0.5) {
-        config.deleteCatFiles ? archiveFile(imagePath) : deleteFile(imagePath);
+        config.deleteCatFiles ? deleteFile(imagePath) : archiveFile(imagePath, name);
     } else {
         deleteFile(imagePath);
     }
