@@ -1,6 +1,7 @@
 {
     "imageDir": "/var/lib/motion",
     "archiveDir": "/home/pi/mio/archive",
+    "pythonScript": "/home/pi/mio/mio.py",
     "deleteFiles": true,
     "deleteCatFiles": false,
     "emailAccount": "...@...",
