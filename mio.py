@@ -7,47 +7,66 @@ from PIL import Image
 from flask import Flask, request, Response
 
 
-import edgetpu.classification.engine
+import pathlib
+from pycoral.utils import edgetpu
+from pycoral.utils import dataset
+from pycoral.adapters import common
+from pycoral.adapters import classify
 
 
 
 # Initialize the Flask application
 app = Flask(__name__)
 
-# initialize ai
-model = './edgemodel/models_edge_ICN7519559552275459553_2019-08-15_18-34-56-018_edgetpu-tflite_edgetpu_model.tflite'
-labels = './edgemodel/models_edge_ICN7519559552275459553_2019-08-15_18-34-56-018_edgetpu-tflite_dict.txt'
+# Specify the TensorFlow model, labels, and image
+script_dir = pathlib.Path(__file__).parent.absolute()
+model_file = os.path.join(script_dir, '/home/pi/edgemodel/20191110/edgetpu_model.tflite')
+label_file = os.path.join(script_dir, '/home/pi/edgemodel/20191110/dict.txt')
 
-with open(labels, 'r') as f:
-	pairs = (l.strip().split(maxsplit=1) for l in f.readlines())
-	labels = dict((int(k), v) for k, v in pairs)
+# Initialize the TF interpreter
+interpreter = edgetpu.make_interpreter(model_file)
+labels = dataset.read_label_file(label_file)
 
-engine = edgetpu.classification.engine.ClassificationEngine(model)
-_, width, height, channels = engine.get_input_tensor_shape()
-
-imageWidth = 640
-imageHeight = 480
+running = False
 
 # route http posts to this method
 @app.route('/api/image', methods=['POST'])
 def image():
-	largeImage = Image.open(request.data)
-	smallImage = largeImage.resize((width, height))
+	global running
+	global labels
+	global interpreter
+
+	if running:
+		return Response(response="{}", status=429 , mimetype="application/json")
 	
-	results = engine.ClassifyWithInputTensor(np.array(smallImage).reshape(width*height*3), top_k=3)
+	running = True
+	# Run an inference
+	interpreter.allocate_tensors()
+	size = common.input_size(interpreter)
+	image = Image.open(request.data).convert('RGB').resize(size, Image.ANTIALIAS)
+	common.set_input(interpreter, image)
 	
-	catValue = 0
+	interpreter.invoke()
+	classes = classify.get_classes(interpreter, top_k=3)
+	
+	nomouseValue = 0
 	mouseValue = 0
-	for result in results:
-		if labels[result[0]] == "cat":
-			catValue = result[1]
-		if labels[result[0]] == "mouse":
-			mouseValue = result[1]
-	
+
+	# Print the result
+	for c in classes:
+		label = labels.get(c.id, c.id)
+		score = c.score
+		if label == "nomouse":
+			nomouseValue = score
+		if label == "mouse":
+			mouseValue = score
+
+	running = False
 	# build a response dict to send back to client
-	response = {'tags': {'mouse': float(mouseValue), 'cat': float(catValue)}}
+	response = {'tags': {'mouse': float(mouseValue), 'nomouse': float(nomouseValue)}}
 	# encode response using jsonpickle
 	response_pickled = jsonpickle.encode(response)
+
 
 	return Response(response=response_pickled, status=200, mimetype="application/json")
 
