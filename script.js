@@ -13,7 +13,7 @@ const servos = config.servos;
 const keepDoorClosedFor = config.keepDoorClosedFor || 1*60*1000; // 1 minute
 let reopenTimeout = null;
 let gpioReady = false;
-let stopProcessing = false;
+let stopProcessing = true;
 let subprocess = null;
 
 // start python server
@@ -31,7 +31,7 @@ function startPythonScript(firstTime = false) {
                 // give it a few seconds before restart
                 setTimeout(() => {
                     logger.info('starting python script');
-                    subprocess = spawn('python3', ['/home/pi/mio.py']);
+                    subprocess = spawn('python3', [config.pythonScript]);
                     // give it a few seconds to start
                     setTimeout(() => {
                         stopProcessing = false;
@@ -42,14 +42,15 @@ function startPythonScript(firstTime = false) {
                 // restart
                 logger.info('fkill error was ' + e);
                 logger.info('starting python script');
-                subprocess = spawn('python3', ['/home/pi/mio.py']);
+                subprocess = spawn('python3', [config.pythonScript]);
                 stopProcessing = false;
             });
         }
     }
     else {
         logger.info('starting python script');
-        subprocess = spawn('python3', ['/home/pi/mio.py']);
+        subprocess = spawn('python3', [config.pythonScript]);
+        stopProcessing = false;
     }
 }
 
@@ -157,6 +158,9 @@ function handleNewFile(name) {
                 startPythonScript();
             }
             deleteFile(path);
+        }
+        else if (httpResponse.statusCode == 429) {
+            logger.error('Too many requests on image recognition');
         }
         else {
             let timeTaken = new Date().valueOf() - timeTracker;
