@@ -185,7 +185,12 @@ function deleteFile(path) {
 
 function archiveFile(path, fileName) {
     logger.info(`${path}: archived file`)
-    fs.rename(path, `${config.archiveDir}/${fileName}`);
+    try {
+        fs.rename(path, `${config.archiveDir}/${fileName}`, () => { /* no callback needed */ });
+    }
+    catch (e) {
+        logger.error(`Error while archiving image: ${e}`);
+    }
 }
 
 
