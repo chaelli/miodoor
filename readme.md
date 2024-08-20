@@ -1,7 +1,7 @@
 * Install Raspbian
 * sudo apt-get install motion
 * Update /etc/motion/motion.conf with the file from the repo
-* /etc/default/motion => set to yes
+* /etc/default/motion => set to yes => file needs to contain 'start_motion_daemon=yes'
 * sudo raspi-config => interfaces => enable camera
 * reboot
 * sudo modprobe bcm2835-v4l2 => also add this line to /etc/rc.local (without sudo)
