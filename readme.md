@@ -6,6 +6,7 @@
 * reboot
 * sudo modprobe bcm2835-v4l2 => also add this line to /etc/rc.local (without sudo)
 * sudo nano /lib/systemd/system/motion.service => change "ExecStart=/usr/bin/motion" to "ExecStart=/usr/bin/libcamerify /usr/bin/motion"
+* sudo chmod 777 /var/log/motion
 * sudo service motion restart
 * sudo apt-get install nodejs
 * sudo apt-get install npm
