@@ -10,6 +10,7 @@
   "dependencies": {
     "customvision-api": "0.0.1",
     "debounce": "^1.2.0",
+    "fkill": "^9.0.0",
     "jpeg-js": "^0.3.3",
     "jsartoolkit": "0.0.0",
     "jsqr": "^1.0.1",
